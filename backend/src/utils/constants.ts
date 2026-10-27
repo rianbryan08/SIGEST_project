@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export const ROLES = ["ADMIN", "ANALISTA", "TECHNICIAN", "USER"] as const;
 export type RoleName = (typeof ROLES)[number];
 
@@ -20,14 +21,27 @@ export const RESETTABLE_ROLES: Record<RoleName, RoleName[]> = {
   USER: [],
 };
 
+=======
+export const ROLES = ["ADMIN", "TECHNICIAN", "USER"] as const;
+export type RoleName = (typeof ROLES)[number];
+
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 export const PRIORITIES = ["BAIXA", "MEDIA", "ALTA", "CRITICA"] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
 export const STATUSES = [
   "ABERTO",
+<<<<<<< HEAD
   "EM_ATENDIMENTO",
   "AGUARDANDO_USUARIO",
   "RESOLVIDO",
+=======
+  "EM_TRIAGEM",
+  "EM_ATENDIMENTO",
+  "AGUARDANDO_USUARIO",
+  "RESOLVIDO",
+  "ENCERRADO",
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   "CANCELADO",
 ] as const;
 export type TicketStatus = (typeof STATUSES)[number];

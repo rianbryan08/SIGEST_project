@@ -13,7 +13,11 @@ const createSchema = z.object({
 });
 
 const statusSchema = z.object({
+<<<<<<< HEAD
   status: z.enum(["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO", "RESOLVIDO", "CANCELADO"]),
+=======
+  status: z.enum(["ABERTO", "EM_TRIAGEM", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO", "RESOLVIDO", "ENCERRADO", "CANCELADO"]),
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 });
 
 const prioritySchema = z.object({

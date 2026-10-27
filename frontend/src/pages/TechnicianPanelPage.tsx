@@ -160,7 +160,11 @@ export function TechnicianPanelPage() {
                           >
                             Registrar tratativa
                           </Link>
+<<<<<<< HEAD
                           {["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO"].includes(
+=======
+                          {["ABERTO", "EM_TRIAGEM", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO"].includes(
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
                             ticket.status
                           ) &&
                             otherTechnicians.length > 0 && (

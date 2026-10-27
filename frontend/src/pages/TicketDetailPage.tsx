@@ -36,9 +36,17 @@ interface TicketDetail {
 
 const statusOptions: TicketStatus[] = [
   "ABERTO",
+<<<<<<< HEAD
   "EM_ATENDIMENTO",
   "AGUARDANDO_USUARIO",
   "RESOLVIDO",
+=======
+  "EM_TRIAGEM",
+  "EM_ATENDIMENTO",
+  "AGUARDANDO_USUARIO",
+  "RESOLVIDO",
+  "ENCERRADO",
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   "CANCELADO",
 ];
 
@@ -131,6 +139,7 @@ export function TicketDetailPage() {
     return <div className="flex h-64 items-center justify-center text-muted">Carregando chamado...</div>;
   }
 
+<<<<<<< HEAD
   const canManage =
     user?.role === "ADMIN" ||
     ((user?.role === "TECHNICIAN" || user?.role === "ANALISTA") && ticket.technician?.id === user.id);
@@ -138,6 +147,13 @@ export function TicketDetailPage() {
   // Chat: cliente que abriu o chamado + técnico que está atendendo + admin (para acompanhamento).
   const canChat = isRequester || canManage;
   const chatOpen = !["RESOLVIDO", "CANCELADO"].includes(ticket.status);
+=======
+  const canManage = user?.role === "ADMIN" || (user?.role === "TECHNICIAN" && ticket.technician?.id === user.id);
+  const isRequester = user?.id === ticket.requester.id;
+  // Chat: cliente que abriu o chamado + técnico que está atendendo + admin (para acompanhamento).
+  const canChat = isRequester || canManage;
+  const chatOpen = !["RESOLVIDO", "ENCERRADO", "CANCELADO"].includes(ticket.status);
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -189,7 +205,11 @@ export function TicketDetailPage() {
           </ol>
         </div>
 
+<<<<<<< HEAD
         {ticket.status === "RESOLVIDO" && (
+=======
+        {(ticket.status === "RESOLVIDO" || ticket.status === "ENCERRADO") && (
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
           <div className="rounded-lg border border-line bg-surface p-6 shadow-soft">
             <h2 className="mb-3 font-display text-sm font-bold text-ink">Avaliação do atendimento</h2>
 

@@ -11,7 +11,11 @@ import {
   Cell,
   CartesianGrid,
 } from "recharts";
+<<<<<<< HEAD
 import { Inbox, Wrench, Clock, CheckCircle2, AlertTriangle, LayoutGrid } from "lucide-react";
+=======
+import { Inbox, Wrench, Clock, CheckCircle2, Archive, AlertTriangle, LayoutGrid } from "lucide-react";
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 import { api } from "../services/api";
 import { StatCard } from "../components/StatCard";
 import { StatusBadge } from "../components/StatusBadge";
@@ -20,9 +24,17 @@ import { DashboardStats, DashboardCharts, TicketListItem } from "../types";
 
 const statusLabels: Record<string, string> = {
   ABERTO: "Aberto",
+<<<<<<< HEAD
   EM_ATENDIMENTO: "Em atendimento",
   AGUARDANDO_USUARIO: "Aguardando usuário",
   RESOLVIDO: "Resolvido",
+=======
+  EM_TRIAGEM: "Em triagem",
+  EM_ATENDIMENTO: "Em atendimento",
+  AGUARDANDO_USUARIO: "Aguardando usuário",
+  RESOLVIDO: "Resolvido",
+  ENCERRADO: "Encerrado",
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   CANCELADO: "Cancelado",
 };
 
@@ -83,6 +95,10 @@ export function DashboardPage() {
         <StatCard label="Em atendimento" value={stats.emAtendimento} description="Sendo tratados agora" icon={Wrench} />
         <StatCard label="Aguard. usuário" value={stats.aguardandoUsuario} description="Esperando retorno do solicitante" icon={Clock} />
         <StatCard label="Resolvidos" value={stats.resolvidos} description="Solução aplicada" icon={CheckCircle2} tone="success" />
+<<<<<<< HEAD
+=======
+        <StatCard label="Encerrados" value={stats.encerrados} description="Chamados finalizados" icon={Archive} />
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
         <StatCard
           label="Alta prioridade"
           value={stats.altaPrioridade}

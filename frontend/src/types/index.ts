@@ -1,12 +1,24 @@
+<<<<<<< HEAD
 export type RoleName = "ADMIN" | "ANALISTA" | "TECHNICIAN" | "USER";
+=======
+export type RoleName = "ADMIN" | "TECHNICIAN" | "USER";
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
 export type Priority = "BAIXA" | "MEDIA" | "ALTA" | "CRITICA";
 
 export type TicketStatus =
   | "ABERTO"
+<<<<<<< HEAD
   | "EM_ATENDIMENTO"
   | "AGUARDANDO_USUARIO"
   | "RESOLVIDO"
+=======
+  | "EM_TRIAGEM"
+  | "EM_ATENDIMENTO"
+  | "AGUARDANDO_USUARIO"
+  | "RESOLVIDO"
+  | "ENCERRADO"
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   | "CANCELADO";
 
 export interface AuthUser {
@@ -48,6 +60,10 @@ export interface DashboardStats {
   emAtendimento: number;
   aguardandoUsuario: number;
   resolvidos: number;
+<<<<<<< HEAD
+=======
+  encerrados: number;
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   altaPrioridade: number;
 }
 

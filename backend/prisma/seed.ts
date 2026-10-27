@@ -16,9 +16,14 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Roles
+<<<<<<< HEAD
   const [adminRole, analystRole, techRole, userRole] = await Promise.all([
     prisma.role.upsert({ where: { name: "ADMIN" }, update: {}, create: { name: "ADMIN" } }),
     prisma.role.upsert({ where: { name: "ANALISTA" }, update: {}, create: { name: "ANALISTA" } }),
+=======
+  const [adminRole, techRole, userRole] = await Promise.all([
+    prisma.role.upsert({ where: { name: "ADMIN" }, update: {}, create: { name: "ADMIN" } }),
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     prisma.role.upsert({ where: { name: "TECHNICIAN" }, update: {}, create: { name: "TECHNICIAN" } }),
     prisma.role.upsert({ where: { name: "USER" }, update: {}, create: { name: "USER" } }),
   ]);
@@ -66,6 +71,7 @@ async function main() {
     },
   });
 
+<<<<<<< HEAD
   // Analistas
   const analystsData = [
     { name: "Rian", email: "rian@empresa.com" },
@@ -87,6 +93,12 @@ async function main() {
   const techniciansData = [
     { name: "Carlos Silva", email: "carlos@empresa.com" },
     { name: "Ana Souza", email: "ana@empresa.com" },
+=======
+  // Tecnicos
+  const techniciansData = [
+    { name: "Rian", email: "rian@empresa.com" },
+    { name: "Vinicius", email: "vinicius@empresa.com" },
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   ];
   for (const t of techniciansData) {
     await prisma.user.create({
@@ -120,10 +132,15 @@ async function main() {
   console.log("Seed concluido com sucesso. Nenhum chamado foi criado.");
   console.log("---");
   console.log("Login admin: admin@empresa.com / Admin123!");
+<<<<<<< HEAD
   console.log("Login analista: rian@empresa.com / Analista123!");
   console.log("Login analista: vinicius@empresa.com / Analista123!");
   console.log("Login tecnico: carlos@empresa.com / Tecnico123!");
   console.log("Login tecnico: ana@empresa.com / Tecnico123!");
+=======
+  console.log("Login tecnico: rian@empresa.com / Tecnico123!");
+  console.log("Login tecnico: vinicius@empresa.com / Tecnico123!");
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   console.log("Login cliente: fernanda.lima@empresa.com / Usuario123!");
   console.log("Login cliente: gabriel.rocha@empresa.com / Usuario123!");
 }

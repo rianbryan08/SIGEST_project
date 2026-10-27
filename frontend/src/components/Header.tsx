@@ -4,7 +4,10 @@ import { useAuth } from "../contexts/AuthContext";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Administrador",
+<<<<<<< HEAD
   ANALISTA: "Analista",
+=======
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   TECHNICIAN: "Técnico",
   USER: "Solicitante",
 };

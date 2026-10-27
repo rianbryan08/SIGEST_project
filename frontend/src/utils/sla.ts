@@ -1,6 +1,10 @@
 import { TicketStatus } from "../types";
 
+<<<<<<< HEAD
 const FINISHED_STATUSES: TicketStatus[] = ["RESOLVIDO", "CANCELADO"];
+=======
+const FINISHED_STATUSES: TicketStatus[] = ["RESOLVIDO", "ENCERRADO", "CANCELADO"];
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
 export interface SlaInfo {
   deadline: Date;

@@ -81,14 +81,23 @@ export const ticketService = {
   },
 
   async assign(user: TokenPayload, ticketId: string) {
+<<<<<<< HEAD
     if (user.role !== "TECHNICIAN" && user.role !== "ANALISTA" && user.role !== "ADMIN") {
       throw new AppError("Apenas técnicos, analistas ou administradores podem assumir chamados.", 403);
+=======
+    if (user.role !== "TECHNICIAN" && user.role !== "ADMIN") {
+      throw new AppError("Apenas técnicos podem assumir chamados.", 403);
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     }
 
     // Captura atômica: só atualiza se ainda não houver técnico responsável
     const result = await prisma.ticket.updateMany({
       where: { id: ticketId, technicianId: null },
+<<<<<<< HEAD
       data: { technicianId: user.sub, status: "EM_ATENDIMENTO" },
+=======
+      data: { technicianId: user.sub, status: "EM_TRIAGEM" },
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     });
 
     if (result.count === 0) {
@@ -124,7 +133,11 @@ export const ticketService = {
     });
     if (!targetTechnician) throw new AppError("Técnico de destino inválido.", 400);
 
+<<<<<<< HEAD
     await ticketRepository.update(ticketId, { technicianId: targetTechnicianId, status: "EM_ATENDIMENTO" });
+=======
+    await ticketRepository.update(ticketId, { technicianId: targetTechnicianId, status: "EM_TRIAGEM" });
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
     await ticketRepository.addHistory({
       ticket: { connect: { id: ticketId } },
@@ -148,6 +161,10 @@ export const ticketService = {
 
     const extra: Record<string, unknown> = { status };
     if (status === "RESOLVIDO") extra.resolvedAt = new Date();
+<<<<<<< HEAD
+=======
+    if (status === "ENCERRADO") extra.closedAt = new Date();
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
     await ticketRepository.update(ticketId, extra);
 
@@ -189,7 +206,11 @@ export const ticketService = {
     const ticket = await ticketRepository.findById(ticketId);
     if (!ticket) throw new AppError("Chamado não encontrado.", 404);
 
+<<<<<<< HEAD
     if (["RESOLVIDO", "CANCELADO"].includes(ticket.status)) {
+=======
+    if (["RESOLVIDO", "ENCERRADO", "CANCELADO"].includes(ticket.status)) {
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
       throw new AppError("Este chamado já foi finalizado. O bate-papo está encerrado.", 400);
     }
 
@@ -229,8 +250,13 @@ export const ticketService = {
       throw new AppError("Apenas o solicitante do chamado pode enviar o feedback.", 403);
     }
 
+<<<<<<< HEAD
     if (ticket.status !== "RESOLVIDO") {
       throw new AppError("O feedback só pode ser enviado após o chamado ser resolvido.", 400);
+=======
+    if (ticket.status !== "RESOLVIDO" && ticket.status !== "ENCERRADO") {
+      throw new AppError("O feedback só pode ser enviado após o chamado ser resolvido ou encerrado.", 400);
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     }
 
     if (ticket.feedback) {

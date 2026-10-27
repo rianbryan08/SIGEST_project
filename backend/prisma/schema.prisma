@@ -9,7 +9,10 @@ datasource db {
 
 enum RoleName {
   ADMIN
+<<<<<<< HEAD
   ANALISTA
+=======
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   TECHNICIAN
   USER
 }
@@ -23,9 +26,17 @@ enum Priority {
 
 enum Status {
   ABERTO
+<<<<<<< HEAD
   EM_ATENDIMENTO
   AGUARDANDO_USUARIO
   RESOLVIDO
+=======
+  EM_TRIAGEM
+  EM_ATENDIMENTO
+  AGUARDANDO_USUARIO
+  RESOLVIDO
+  ENCERRADO
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   CANCELADO
 }
 

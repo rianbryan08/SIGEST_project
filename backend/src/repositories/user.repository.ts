@@ -29,7 +29,10 @@ export const userRepository = {
   create(data: { name: string; email: string; passwordHash: string; roleId: string; departmentId?: string }) {
     return prisma.user.create({ data, include: { role: true } });
   },
+<<<<<<< HEAD
   updatePassword(id: string, passwordHash: string) {
     return prisma.user.update({ where: { id }, data: { passwordHash } });
   },
+=======
+>>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 };
