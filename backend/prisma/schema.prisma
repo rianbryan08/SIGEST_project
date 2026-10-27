@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  ADMIN
+  ANALISTA
+  TECHNICIAN
+  USER
+}
+
+enum Priority {
+  BAIXA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum Status {
+  ABERTO
+  EM_ATENDIMENTO
+  AGUARDANDO_USUARIO
+  RESOLVIDO
+  CANCELADO
+}
+
+model Role {
+  id    String   @id @default(uuid())
+  name  RoleName @unique
+  users User[]
+}
+
+model Department {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  users   User[]
+  tickets Ticket[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  roleId       String
+  departmentId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  role       Role        @relation(fields: [roleId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  requestedTickets Ticket[]        @relation("RequestedTickets")
+  assignedTickets  Ticket[]        @relation("AssignedTickets")
+  comments         TicketComment[]
+  historyEvents    TicketHistory[]
+  feedbacks        TicketFeedback[]
+}
+
+model Category {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  slaHours Int      @default(24) // prazo padrão de resolução, em horas, para chamados dessa categoria
+  tickets  Ticket[]
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  code        String   @unique // ex: CH-0001
+  title       String
+  description String   @db.Text
+  location    String?
+  equipment   String?
+  contact     String?
+  priority    Priority @default(MEDIA)
+  status      Status   @default(ABERTO)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  requesterId String
+  requester   User   @relation("RequestedTickets", fields: [requesterId], references: [id])
+
+  technicianId String?
+  technician   User?   @relation("AssignedTickets", fields: [technicianId], references: [id])
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+  closedAt   DateTime?
+
+  history     TicketHistory[]
+  comments    TicketComment[]
+  attachments Attachment[]
+  feedback    TicketFeedback?
+}
+
+model TicketHistory {
+  id          String   @id @default(uuid())
+  ticketId    String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String // ex: STATUS_CHANGE, PRIORITY_CHANGE, ASSIGNED, CREATED, COMMENT, FEEDBACK
+  fromValue   String?
+  toValue     String?
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model TicketComment {
+  id               String   @id @default(uuid())
+  ticketId         String
+  ticket           Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  content          String   @db.Text
+  isFirstTreatment Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  filename  String
+  path      String
+  createdAt DateTime @default(now())
+}
+
+// Avaliação/feedback do usuário solicitante após o fechamento do chamado
+model TicketFeedback {
+  id        String   @id @default(uuid())
+  ticketId  String   @unique
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int // 1 a 5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+}
