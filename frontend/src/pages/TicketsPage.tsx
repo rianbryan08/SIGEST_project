@@ -67,8 +67,8 @@ export function TicketsPage() {
               <thead>
                 <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
                   <th className="px-5 py-3 font-medium">Código</th>
-                  <th className="px-5 py-3 font-medium">Título</th>
                   <th className="px-5 py-3 font-medium">Categoria</th>
+                  <th className="px-5 py-3 font-medium">Solicitante</th>
                   <th className="px-5 py-3 font-medium">Prioridade</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">Técnico</th>
@@ -82,8 +82,8 @@ export function TicketsPage() {
                     <td className="px-5 py-3 font-medium text-signal-dark">
                       <Link to={`/chamados/${ticket.id}`}>{ticket.code}</Link>
                     </td>
-                    <td className="px-5 py-3">{ticket.title}</td>
-                    <td className="px-5 py-3 text-muted">{ticket.category.name}</td>
+                    <td className="px-5 py-3 font-medium text-ink">{ticket.category.name}</td>
+                    <td className="px-5 py-3 text-muted">{ticket.requesterName}</td>
                     <td className="px-5 py-3">
                       <PriorityBadge priority={ticket.priority} />
                     </td>
@@ -92,7 +92,7 @@ export function TicketsPage() {
                     </td>
                     <td className="px-5 py-3 text-muted">{ticket.technician?.name ?? "—"}</td>
                     <td className="px-5 py-3">
-                      <SlaBadge createdAt={ticket.createdAt} slaHours={ticket.category.slaHours} status={ticket.status} />
+                      <SlaBadge dueAt={ticket.dueAt} status={ticket.status} />
                     </td>
                     <td className="px-5 py-3">
                       {!ticket.technician && user?.role === "TECHNICIAN" && (

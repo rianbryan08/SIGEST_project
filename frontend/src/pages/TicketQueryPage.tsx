@@ -38,7 +38,8 @@ export function TicketQueryPage() {
   const filtered = tickets.filter(
     (t) =>
       t.code.toLowerCase().includes(search.toLowerCase()) ||
-      t.title.toLowerCase().includes(search.toLowerCase())
+      t.category.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.requesterName.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -54,7 +55,7 @@ export function TicketQueryPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por código ou título..."
+            placeholder="Buscar por código, categoria ou solicitante..."
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
           />
         </div>
@@ -82,7 +83,7 @@ export function TicketQueryPage() {
               <thead>
                 <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
                   <th className="px-5 py-3 font-medium">Código</th>
-                  <th className="px-5 py-3 font-medium">Título</th>
+                  <th className="px-5 py-3 font-medium">Categoria</th>
                   <th className="px-5 py-3 font-medium">Prioridade</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">Técnico</th>
@@ -96,7 +97,7 @@ export function TicketQueryPage() {
                     <td className="px-5 py-3 font-medium text-signal-dark">
                       <Link to={`/chamados/${ticket.id}`}>{ticket.code}</Link>
                     </td>
-                    <td className="px-5 py-3">{ticket.title}</td>
+                    <td className="px-5 py-3 font-medium text-ink">{ticket.category.name}</td>
                     <td className="px-5 py-3">
                       <PriorityBadge priority={ticket.priority} />
                     </td>
@@ -105,11 +106,7 @@ export function TicketQueryPage() {
                     </td>
                     <td className="px-5 py-3 text-muted">{ticket.technician?.name ?? "Aguardando atribuição"}</td>
                     <td className="px-5 py-3">
-                      <SlaBadge
-                        createdAt={ticket.createdAt}
-                        slaHours={ticket.category.slaHours}
-                        status={ticket.status as TicketStatus}
-                      />
+                      <SlaBadge dueAt={ticket.dueAt} status={ticket.status as TicketStatus} />
                     </td>
                     <td className="px-5 py-3 text-muted">{new Date(ticket.createdAt).toLocaleDateString("pt-BR")}</td>
                   </tr>

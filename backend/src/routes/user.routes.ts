@@ -6,20 +6,13 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 import { requireRole } from "../middlewares/role.middleware";
 import { userRepository } from "../repositories/user.repository";
 import { AppError } from "../middlewares/errorHandler";
-<<<<<<< HEAD
 import { CREATABLE_ROLES, RESETTABLE_ROLES } from "../utils/constants";
-=======
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
 const router = Router();
 router.use(authMiddleware);
 
-<<<<<<< HEAD
 // ADMIN e ANALISTA podem listar usuários (para gerenciar quem está abaixo deles)
 router.get("/", requireRole("ADMIN", "ANALISTA"), async (_req, res, next) => {
-=======
-router.get("/", requireRole("ADMIN"), async (_req, res, next) => {
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   try {
     const users = await userRepository.findAll();
     res.json(users.map((u: { passwordHash: string; [key: string]: unknown }) => {
@@ -47,7 +40,6 @@ const createSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6, "Senha deve ter ao menos 6 caracteres."),
-<<<<<<< HEAD
   role: z.enum(["ADMIN", "ANALISTA", "TECHNICIAN", "USER"]),
   departmentId: z.string().optional(),
 });
@@ -62,16 +54,6 @@ router.post("/", requireRole("ADMIN", "ANALISTA"), async (req, res, next) => {
       throw new AppError(`Seu perfil não pode criar usuários com o cargo ${data.role}.`, 403);
     }
 
-=======
-  role: z.enum(["ADMIN", "TECHNICIAN", "USER"]),
-  departmentId: z.string().optional(),
-});
-
-router.post("/", requireRole("ADMIN"), async (req, res, next) => {
-  try {
-    const data = createSchema.parse(req.body);
-
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     const existing = await userRepository.findByEmail(data.email);
     if (existing) throw new AppError("Já existe um usuário com este e-mail.", 409);
 
@@ -95,7 +77,6 @@ router.post("/", requireRole("ADMIN"), async (req, res, next) => {
   }
 });
 
-<<<<<<< HEAD
 const resetPasswordSchema = z.object({
   newPassword: z.string().min(6, "Senha deve ter ao menos 6 caracteres."),
 });
@@ -123,6 +104,4 @@ router.put("/:id/password", requireRole("ADMIN", "ANALISTA"), async (req, res, n
   }
 });
 
-=======
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 export default router;

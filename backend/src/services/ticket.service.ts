@@ -4,16 +4,23 @@ import { AppError } from "../middlewares/errorHandler";
 import { TokenPayload } from "../utils/jwt";
 import { STATUSES, PRIORITIES, TicketStatus, Priority } from "../utils/constants";
 
+interface UploadedScreenshot {
+  originalname: string;
+  filename: string;
+  mimetype: string;
+}
+
 interface CreateTicketInput {
-  title: string;
   description: string;
   categoryId: string;
-  priority: Priority;
+  requesterName: string;
   location?: string;
   equipment?: string;
   contact?: string;
   departmentId?: string;
 }
+
+const PRIORITY_LABELS: Record<Priority, string> = { BAIXA: "baixa", MEDIA: "média", ALTA: "alta" };
 
 export const ticketService = {
   async list(user: TokenPayload, filters: { status?: string; priority?: string; categoryId?: string; technicianId?: string }) {
@@ -45,59 +52,69 @@ export const ticketService = {
       throw new AppError("Você não tem acesso a este chamado.", 403);
     }
 
+    // Procedimentos da base de conhecimento são de uso interno da equipe de atendimento.
+    if (user.role === "USER") {
+      return { ...ticket, knowledgeUses: [] };
+    }
+
     return ticket;
   },
 
-  async create(user: TokenPayload, input: CreateTicketInput) {
-    if (!PRIORITIES.includes(input.priority)) {
-      throw new AppError("Prioridade inválida.", 400);
+  async create(user: TokenPayload, input: CreateTicketInput, screenshot?: UploadedScreenshot) {
+    const category = await prisma.category.findUnique({ where: { id: input.categoryId } });
+    if (!category || !category.active) {
+      throw new AppError("Categoria inválida ou inativa.", 400);
     }
 
+    // Prioridade e prazo vêm da categoria escolhida. O prazo é gravado no chamado
+    // (dueAt) para não mudar se o administrador editar a categoria depois.
+    const dueAt = new Date(Date.now() + category.slaHours * 60 * 60 * 1000);
     const code = await ticketRepository.nextCode();
 
     const ticket = await ticketRepository.create({
       code,
-      title: input.title,
       description: input.description,
-      priority: input.priority,
+      priority: category.defaultPriority,
       status: "ABERTO",
+      dueAt,
       location: input.location,
       equipment: input.equipment,
       contact: input.contact,
-      category: { connect: { id: input.categoryId } },
+      requesterName: input.requesterName,
+      category: { connect: { id: category.id } },
       department: input.departmentId ? { connect: { id: input.departmentId } } : undefined,
       requester: { connect: { id: user.sub } },
     });
+
+    if (screenshot) {
+      await ticketRepository.addAttachment({
+        ticket: { connect: { id: ticket.id } },
+        filename: screenshot.originalname,
+        path: screenshot.filename,
+        mimeType: screenshot.mimetype,
+      });
+    }
 
     await ticketRepository.addHistory({
       ticket: { connect: { id: ticket.id } },
       user: { connect: { id: user.sub } },
       action: "CREATED",
       toValue: "ABERTO",
-      description: "Chamado aberto.",
+      description: `Chamado aberto para ${input.requesterName} na categoria ${category.name} (prioridade ${PRIORITY_LABELS[category.defaultPriority]}, prazo de ${category.slaHours}h).`,
     });
 
     return ticket;
   },
 
   async assign(user: TokenPayload, ticketId: string) {
-<<<<<<< HEAD
     if (user.role !== "TECHNICIAN" && user.role !== "ANALISTA" && user.role !== "ADMIN") {
       throw new AppError("Apenas técnicos, analistas ou administradores podem assumir chamados.", 403);
-=======
-    if (user.role !== "TECHNICIAN" && user.role !== "ADMIN") {
-      throw new AppError("Apenas técnicos podem assumir chamados.", 403);
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     }
 
     // Captura atômica: só atualiza se ainda não houver técnico responsável
     const result = await prisma.ticket.updateMany({
       where: { id: ticketId, technicianId: null },
-<<<<<<< HEAD
       data: { technicianId: user.sub, status: "EM_ATENDIMENTO" },
-=======
-      data: { technicianId: user.sub, status: "EM_TRIAGEM" },
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     });
 
     if (result.count === 0) {
@@ -133,11 +150,7 @@ export const ticketService = {
     });
     if (!targetTechnician) throw new AppError("Técnico de destino inválido.", 400);
 
-<<<<<<< HEAD
     await ticketRepository.update(ticketId, { technicianId: targetTechnicianId, status: "EM_ATENDIMENTO" });
-=======
-    await ticketRepository.update(ticketId, { technicianId: targetTechnicianId, status: "EM_TRIAGEM" });
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
     await ticketRepository.addHistory({
       ticket: { connect: { id: ticketId } },
@@ -161,10 +174,6 @@ export const ticketService = {
 
     const extra: Record<string, unknown> = { status };
     if (status === "RESOLVIDO") extra.resolvedAt = new Date();
-<<<<<<< HEAD
-=======
-    if (status === "ENCERRADO") extra.closedAt = new Date();
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
     await ticketRepository.update(ticketId, extra);
 
@@ -206,11 +215,7 @@ export const ticketService = {
     const ticket = await ticketRepository.findById(ticketId);
     if (!ticket) throw new AppError("Chamado não encontrado.", 404);
 
-<<<<<<< HEAD
     if (["RESOLVIDO", "CANCELADO"].includes(ticket.status)) {
-=======
-    if (["RESOLVIDO", "ENCERRADO", "CANCELADO"].includes(ticket.status)) {
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
       throw new AppError("Este chamado já foi finalizado. O bate-papo está encerrado.", 400);
     }
 
@@ -250,13 +255,8 @@ export const ticketService = {
       throw new AppError("Apenas o solicitante do chamado pode enviar o feedback.", 403);
     }
 
-<<<<<<< HEAD
     if (ticket.status !== "RESOLVIDO") {
       throw new AppError("O feedback só pode ser enviado após o chamado ser resolvido.", 400);
-=======
-    if (ticket.status !== "RESOLVIDO" && ticket.status !== "ENCERRADO") {
-      throw new AppError("O feedback só pode ser enviado após o chamado ser resolvido ou encerrado.", 400);
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
     }
 
     if (ticket.feedback) {

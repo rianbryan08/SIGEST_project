@@ -1,27 +1,28 @@
+import fs from "fs";
+import path from "path";
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { ticketService } from "../services/ticket.service";
+import { ticketRepository } from "../repositories/ticket.repository";
+import { UPLOADS_DIR } from "../middlewares/upload.middleware";
+import { AppError } from "../middlewares/errorHandler";
 
 const createSchema = z.object({
-  title: z.string().min(3, "Título é obrigatório."),
-  description: z.string().min(5, "Descrição é obrigatória."),
+  requesterName: z.string().trim().min(2, "Nome do solicitante é obrigatório.").max(150, "Nome muito longo."),
+  description: z.string().trim().min(5, "Descrição é obrigatória."),
   categoryId: z.string().min(1, "Categoria é obrigatória."),
-  location: z.string().optional(),
-  equipment: z.string().optional(),
-  contact: z.string().optional(),
+  location: z.string().max(190).optional(),
+  equipment: z.string().max(190).optional(),
+  contact: z.string().max(190).optional(),
   departmentId: z.string().optional(),
 });
 
 const statusSchema = z.object({
-<<<<<<< HEAD
   status: z.enum(["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO", "RESOLVIDO", "CANCELADO"]),
-=======
-  status: z.enum(["ABERTO", "EM_TRIAGEM", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO", "RESOLVIDO", "ENCERRADO", "CANCELADO"]),
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 });
 
 const prioritySchema = z.object({
-  priority: z.enum(["BAIXA", "MEDIA", "ALTA", "CRITICA"]),
+  priority: z.enum(["BAIXA", "MEDIA", "ALTA"]),
 });
 
 const commentSchema = z.object({
@@ -66,9 +67,27 @@ export const ticketController = {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const data = createSchema.parse(req.body);
-      // Prioridade é classificada depois, apenas por técnico/admin (ver updatePriority).
-      const ticket = await ticketService.create(req.user!, { ...data, priority: "MEDIA" });
+      // Prioridade e prazo são aplicados automaticamente a partir da categoria (ver ticketService.create).
+      const ticket = await ticketService.create(req.user!, data, req.file);
       res.status(201).json(ticket);
+    } catch (err) {
+      // Se o chamado não foi criado, não deixa o print órfão salvo no disco.
+      if (req.file) fs.unlink(path.join(UPLOADS_DIR, req.file.filename), () => undefined);
+      next(err);
+    }
+  },
+
+  // Entrega a imagem anexada só para quem tem acesso ao chamado (as imagens não ficam públicas).
+  async downloadAttachment(req: Request, res: Response, next: NextFunction) {
+    try {
+      await ticketService.getById(req.user!, req.params.id); // valida acesso ao chamado
+      const attachment = await ticketRepository.findAttachment(req.params.id, req.params.attachmentId);
+      if (!attachment) throw new AppError("Anexo não encontrado.", 404);
+
+      const filePath = path.join(UPLOADS_DIR, path.basename(attachment.path));
+      if (!fs.existsSync(filePath)) throw new AppError("Arquivo do anexo não encontrado.", 404);
+
+      res.type(attachment.mimeType).sendFile(filePath);
     } catch (err) {
       next(err);
     }

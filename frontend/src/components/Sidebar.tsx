@@ -9,6 +9,7 @@ import {
   FolderKanban,
   BarChart3,
   Settings,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { RoleName } from "../types";
@@ -21,29 +22,17 @@ interface NavItem {
 }
 
 const items: NavItem[] = [
-<<<<<<< HEAD
   { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "ANALISTA", "TECHNICIAN"] },
   { to: "/chamados", label: "Chamados", icon: Ticket, roles: ["ADMIN"] },
   { to: "/chamados/novo", label: "Abrir chamado", icon: PlusCircle, roles: ["ADMIN", "ANALISTA", "TECHNICIAN", "USER"] },
   { to: "/consultar-chamados", label: "Consultar chamados", icon: ListChecks, roles: ["USER"] },
   { to: "/painel-tecnico", label: "Painel do técnico", icon: Wrench, roles: ["ANALISTA", "TECHNICIAN"] },
+  { to: "/base-conhecimento", label: "Base de conhecimento", icon: BookOpen, roles: ["ADMIN", "ANALISTA", "TECHNICIAN"] },
   { to: "/usuarios", label: "Usuários", icon: Users, roles: ["ADMIN", "ANALISTA"] },
   { to: "/tecnicos", label: "Técnicos", icon: Wrench, roles: ["ADMIN"] },
   { to: "/categorias", label: "Categorias", icon: FolderKanban, roles: ["ADMIN"] },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3, roles: ["ADMIN"] },
   { to: "/configuracoes", label: "Configurações", icon: Settings, roles: ["ADMIN", "ANALISTA", "TECHNICIAN", "USER"] },
-=======
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TECHNICIAN"] },
-  { to: "/chamados", label: "Chamados", icon: Ticket, roles: ["ADMIN"] },
-  { to: "/chamados/novo", label: "Abrir chamado", icon: PlusCircle, roles: ["ADMIN", "TECHNICIAN", "USER"] },
-  { to: "/consultar-chamados", label: "Consultar chamados", icon: ListChecks, roles: ["USER"] },
-  { to: "/painel-tecnico", label: "Painel do técnico", icon: Wrench, roles: ["TECHNICIAN"] },
-  { to: "/usuarios", label: "Usuários", icon: Users, roles: ["ADMIN"] },
-  { to: "/tecnicos", label: "Técnicos", icon: Wrench, roles: ["ADMIN"] },
-  { to: "/categorias", label: "Categorias", icon: FolderKanban, roles: ["ADMIN"] },
-  { to: "/relatorios", label: "Relatórios", icon: BarChart3, roles: ["ADMIN"] },
-  { to: "/configuracoes", label: "Configurações", icon: Settings, roles: ["ADMIN", "TECHNICIAN", "USER"] },
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 ];
 
 export function Sidebar() {

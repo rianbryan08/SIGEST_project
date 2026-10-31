@@ -1,24 +1,12 @@
-<<<<<<< HEAD
 export type RoleName = "ADMIN" | "ANALISTA" | "TECHNICIAN" | "USER";
-=======
-export type RoleName = "ADMIN" | "TECHNICIAN" | "USER";
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
-export type Priority = "BAIXA" | "MEDIA" | "ALTA" | "CRITICA";
+export type Priority = "BAIXA" | "MEDIA" | "ALTA";
 
 export type TicketStatus =
   | "ABERTO"
-<<<<<<< HEAD
   | "EM_ATENDIMENTO"
   | "AGUARDANDO_USUARIO"
   | "RESOLVIDO"
-=======
-  | "EM_TRIAGEM"
-  | "EM_ATENDIMENTO"
-  | "AGUARDANDO_USUARIO"
-  | "RESOLVIDO"
-  | "ENCERRADO"
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   | "CANCELADO";
 
 export interface AuthUser {
@@ -32,16 +20,19 @@ export interface AuthUser {
 export interface Category {
   id: string;
   name: string;
-  slaHours: number;
+  slaHours: number; // prazo de atendimento, em horas, aplicado aos novos chamados
+  defaultPriority: Priority; // prioridade aplicada automaticamente aos novos chamados
+  active: boolean;
 }
 
 export interface TicketListItem {
   id: string;
   code: string;
-  title: string;
   priority: Priority;
   status: TicketStatus;
   createdAt: string;
+  dueAt: string;
+  requesterName: string;
   category: Category;
   requester: { id: string; name: string };
   technician: { id: string; name: string } | null;
@@ -60,10 +51,6 @@ export interface DashboardStats {
   emAtendimento: number;
   aguardandoUsuario: number;
   resolvidos: number;
-<<<<<<< HEAD
-=======
-  encerrados: number;
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   altaPrioridade: number;
 }
 
@@ -71,4 +58,28 @@ export interface DashboardCharts {
   byStatus: { status: TicketStatus; total: number }[];
   byPriority: { priority: Priority; total: number }[];
   byCategory: { category: string; total: number }[];
+}
+
+export type KnowledgeStatus = "PENDENTE" | "APROVADO";
+
+export interface KnowledgeArticle {
+  id: string;
+  title: string;
+  problem: string;
+  solution: string;
+  keywords: string | null;
+  status: KnowledgeStatus;
+  categoryId: string;
+  category: { id: string; name: string };
+  createdBy: { id: string; name: string };
+  approvedBy: { id: string; name: string } | null;
+  approvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { usages: number };
+}
+
+export interface KnowledgeSuggestion extends KnowledgeArticle {
+  matches: number; // palavras do chamado encontradas no procedimento
+  alreadyApplied: boolean; // já registrado como aplicado neste chamado
 }

@@ -116,9 +116,8 @@ export function TechnicianPanelPage() {
               <thead>
                 <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
                   <th className="px-5 py-3 font-medium">Código</th>
-                  <th className="px-5 py-3 font-medium">Título</th>
-                  <th className="px-5 py-3 font-medium">Solicitante</th>
                   <th className="px-5 py-3 font-medium">Categoria</th>
+                  <th className="px-5 py-3 font-medium">Solicitante</th>
                   <th className="px-5 py-3 font-medium">Prioridade</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">SLA</th>
@@ -131,9 +130,8 @@ export function TechnicianPanelPage() {
                     <td className="px-5 py-3 font-medium text-signal-dark">
                       <Link to={`/chamados/${ticket.id}`}>{ticket.code}</Link>
                     </td>
-                    <td className="px-5 py-3">{ticket.title}</td>
-                    <td className="px-5 py-3 text-muted">{ticket.requester.name}</td>
-                    <td className="px-5 py-3 text-muted">{ticket.category.name}</td>
+                    <td className="px-5 py-3 font-medium text-ink">{ticket.category.name}</td>
+                    <td className="px-5 py-3 text-muted">{ticket.requesterName}</td>
                     <td className="px-5 py-3">
                       <PriorityBadge priority={ticket.priority} />
                     </td>
@@ -141,7 +139,7 @@ export function TechnicianPanelPage() {
                       <StatusBadge status={ticket.status} />
                     </td>
                     <td className="px-5 py-3">
-                      <SlaBadge createdAt={ticket.createdAt} slaHours={ticket.category.slaHours} status={ticket.status} />
+                      <SlaBadge dueAt={ticket.dueAt} status={ticket.status} />
                     </td>
                     <td className="px-5 py-3">
                       {tab === "fila" ? (
@@ -160,11 +158,7 @@ export function TechnicianPanelPage() {
                           >
                             Registrar tratativa
                           </Link>
-<<<<<<< HEAD
                           {["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO"].includes(
-=======
-                          {["ABERTO", "EM_TRIAGEM", "EM_ATENDIMENTO", "AGUARDANDO_USUARIO"].includes(
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
                             ticket.status
                           ) &&
                             otherTechnicians.length > 0 && (

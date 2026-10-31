@@ -5,11 +5,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "8h";
 
 export interface TokenPayload {
   sub: string; // user id
-<<<<<<< HEAD
   role: "ADMIN" | "ANALISTA" | "TECHNICIAN" | "USER";
-=======
-  role: "ADMIN" | "TECHNICIAN" | "USER";
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 }
 
 export function signToken(payload: TokenPayload): string {

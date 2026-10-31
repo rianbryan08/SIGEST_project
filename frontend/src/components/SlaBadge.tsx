@@ -2,13 +2,12 @@ import { getSlaInfo } from "../utils/sla";
 import { TicketStatus } from "../types";
 
 interface SlaBadgeProps {
-  createdAt: string;
-  slaHours: number;
+  dueAt: string;
   status: TicketStatus;
 }
 
-export function SlaBadge({ createdAt, slaHours, status }: SlaBadgeProps) {
-  const sla = getSlaInfo(createdAt, slaHours, status);
+export function SlaBadge({ dueAt, status }: SlaBadgeProps) {
+  const sla = getSlaInfo(dueAt, status);
 
   return (
     <span

@@ -28,6 +28,10 @@ export const ticketRepository = {
         comments: { orderBy: { createdAt: "asc" }, include: { user: safeUser } },
         attachments: true,
         feedback: { include: { user: safeUser } },
+        knowledgeUses: {
+          orderBy: { createdAt: "asc" },
+          include: { article: { select: { id: true, title: true } }, user: safeUser },
+        },
       },
     });
   },
@@ -61,5 +65,11 @@ export const ticketRepository = {
   },
   addFeedback(data: Parameters<typeof prisma.ticketFeedback.create>[0]["data"]) {
     return prisma.ticketFeedback.create({ data });
+  },
+  addAttachment(data: Parameters<typeof prisma.attachment.create>[0]["data"]) {
+    return prisma.attachment.create({ data });
+  },
+  findAttachment(ticketId: string, attachmentId: string) {
+    return prisma.attachment.findFirst({ where: { id: attachmentId, ticketId } });
   },
 };

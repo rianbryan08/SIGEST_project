@@ -1,6 +1,6 @@
 # Sistema de Gerenciamento de Chamados de Suporte Técnico
 
-> **Status atual:** Backend completo (auth, tickets, captura, histórico, tratativa, feedback, dashboard, hierarquia de cargos) rodando sobre **MySQL**. Frontend com login, dashboard, modo escuro, gestão de usuários e as telas dedicadas por perfil.
+> **Status atual:** Backend completo (auth, chamados, captura, histórico, tratativa, feedback, dashboard, hierarquia de cargos, categorias com prioridade/prazo, anexo de print, relatórios e base de conhecimento) rodando sobre **MySQL**. Frontend com login, dashboard, gestão de usuários e categorias, relatórios, base de conhecimento e as telas dedicadas por perfil.
 
 ## Tecnologias
 
@@ -27,12 +27,30 @@ ambos em `backend/src/utils/constants.ts`.
 | Perfil    | Tela                     | Rota                    | O que faz |
 |-----------|--------------------------|-------------------------|-----------|
 | Admin, Analista, Técnico | Dashboard   | `/`                     | Estatísticas e gráficos gerais |
-| Usuário   | Abertura de chamado      | `/chamados/novo`        | Abre um novo chamado |
+| Admin, Analista, Técnico, Usuário | Abertura de chamado | `/chamados/novo` | Abre um chamado: nome do solicitante, categoria (define prioridade e prazo), descrição e print opcional |
 | Usuário   | Consulta de chamados     | `/consultar-chamados`   | Busca e acompanha seus chamados |
 | Analista, Técnico | Painel do técnico | `/painel-tecnico`       | Fila disponível, captura e gestão dos seus atendimentos |
 | Admin, Analista | Usuários           | `/usuarios`             | Lista usuários e cria novos, respeitando a hierarquia de cargos |
 | Todos     | Detalhes do chamado      | `/chamados/:id`         | Timeline, tratativa (técnico) e **avaliação do usuário** ao final do atendimento |
 | Admin     | Chamados (visão geral)   | `/chamados`              | Lista completa de todos os chamados |
+| Admin     | Categorias               | `/categorias`            | Cadastra/edita categorias, com prioridade padrão e prazo de atendimento |
+| Admin     | Relatórios               | `/relatorios`            | Chamados abertos por usuário e categoria, com filtro de período e exportação CSV |
+| Admin, Analista, Técnico | Base de conhecimento | `/base-conhecimento` | Procedimentos por categoria, pesquisa por palavra-chave e aprovação |
+
+## Categorias, prioridade e prazo
+
+- As prioridades são **Baixa, Média e Alta** (a prioridade "Crítica" foi removida).
+- Cada categoria tem uma **prioridade padrão** e um **prazo de atendimento** (em horas), configurados pelo Admin em `/categorias`.
+- Ao abrir um chamado, a prioridade e o prazo da categoria escolhida são aplicados automaticamente. O prazo é gravado no chamado (`dueAt`), então editar a categoria depois só afeta os **próximos** chamados.
+- O chamado não tem mais título: a **categoria** é a identificação principal, junto do código único (`CH-0001`).
+- O formulário tem o campo **Nome do solicitante** (pode ser diferente de quem abriu) e permite **anexar um print** (PNG/JPG/WEBP/GIF, até 5 MB; também dá para colar com Ctrl+V). As imagens ficam em `backend/uploads` e só são entregues a quem tem acesso ao chamado.
+
+## Base de conhecimento
+
+- Procedimentos são vinculados a uma categoria e têm título, problema, solução e palavras-chave.
+- **Nada vira solução automaticamente.** Quem atende escolhe registrar o procedimento (a partir do chamado ou na tela da base); trechos do bate-papo só entram se forem inseridos manualmente.
+- Fluxo de aprovação: procedimento criado por **Técnico** fica *Aguardando aprovação*; **Admin/Analista** aprovam (ou criam já aprovado). Só procedimentos **aprovados** são sugeridos para reutilização.
+- Dentro do chamado, o técnico vê os procedimentos aprovados da mesma categoria (priorizando os parecidos com a descrição), pode pesquisar por palavra-chave e marcar **"Usei este procedimento"**, o que fica no histórico e conta como reaproveitamento.
 
 
 
@@ -99,6 +117,8 @@ npx prisma db seed
 npm run dev
 ```
 
+> **Atualizando de uma versão anterior?** O banco mudou (categorias com prioridade/prazo, chamado sem título, anexos, base de conhecimento, prioridade sem "Crítica"). Este projeto não traz a pasta `prisma/migrations`: no `migrate dev`, se o Prisma avisar que precisa **resetar o banco** `chamados_db`, responda **y** (isso apaga os dados antigos e já roda o seed). Se aparecer erro de migration antiga/conflito, apague a pasta `backend/prisma/migrations` (se existir) e rode o comando de novo.
+
 Backend sobe em `http://localhost:3333`.
 
 ### 2. Frontend (em outro terminal)
@@ -132,19 +152,22 @@ O seed cria apenas os usuários, roles, departamentos e categorias (com SLA por 
 
 - `POST /api/auth/login`, `GET /api/auth/me`
 - `GET /api/tickets`, `POST /api/tickets`, `GET /api/tickets/:id`
+- `POST /api/tickets` aceita `multipart/form-data` (campos `requesterName`, `categoryId`, `description`, opcionais `location`, `equipment`, `contact` e o arquivo `screenshot`); prioridade e prazo vêm da categoria
+- `GET /api/tickets/:id/attachments/:attachmentId` (imagem anexada, com checagem de acesso)
 - `POST /api/tickets/:id/assign` (captura)
 - `PUT /api/tickets/:id/status`, `PUT /api/tickets/:id/priority`
 - `POST /api/tickets/:id/comments` (tratativa)
 - `POST /api/tickets/:id/feedback` (avaliação do usuário após resolução/encerramento)
-- `GET /api/categories`, `POST /api/categories`
+- `GET /api/categories`, `POST /api/categories`, `PUT /api/categories/:id` (Admin: nome, prioridade padrão, prazo em horas, ativa)
+- `GET /api/reports/tickets-by-user-category?from=AAAA-MM-DD&to=AAAA-MM-DD` (Admin)
+- `GET /api/knowledge` (`categoryId`, `q`, `status`), `GET /api/knowledge/suggestions/:ticketId`, `POST /api/knowledge`, `PUT /api/knowledge/:id`, `POST /api/knowledge/:id/approve`, `POST /api/knowledge/:id/revoke`, `POST /api/knowledge/:id/apply`, `DELETE /api/knowledge/:id`
 - `GET /api/users`, `GET /api/users/technicians`, `POST /api/users`, `PUT /api/users/:id/password` (redefinir senha)
 - `GET /api/dashboard/stats`, `GET /api/dashboard/charts`
 
 ## Próximos passos (planejados)
 
-1. Telas de CRUD de categorias e técnicos no frontend (hoje só listagem/criação de usuários em geral)
-2. Página de relatórios
-3. Filtros avançados e paginação na listagem de chamados
-4. Notificações e estados de loading/vazio mais refinados em todas as telas
+1. Tela de técnicos
+2. Filtros avançados e paginação na listagem de chamados
+3. Notificações e estados de loading/vazio mais refinados em todas as telas
 
 

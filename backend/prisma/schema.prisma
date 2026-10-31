@@ -7,154 +7,213 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RoleName {
-  ADMIN
-<<<<<<< HEAD
-  ANALISTA
-=======
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
-  TECHNICIAN
-  USER
+model attachment {
+  id        String   @id
+  ticketId  String
+  filename  String
+  path      String
+  mimeType  String
+  createdAt DateTime @default(now())
+  ticket    ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade, map: "Attachment_ticketId_fkey")
+
+  @@index([ticketId], map: "Attachment_ticketId_fkey")
 }
 
-enum Priority {
-  BAIXA
-  MEDIA
-  ALTA
-  CRITICA
+model category {
+  id               String                   @id
+  name             String                   @unique(map: "Category_name_key")
+  slaHours         Int                      @default(24)
+  defaultPriority  category_defaultPriority @default(MEDIA)
+  active           Boolean                  @default(true)
+  knowledgearticle knowledgearticle[]
+  ticket           ticket[]
 }
 
-enum Status {
-  ABERTO
-<<<<<<< HEAD
-  EM_ATENDIMENTO
-  AGUARDANDO_USUARIO
-  RESOLVIDO
-=======
-  EM_TRIAGEM
-  EM_ATENDIMENTO
-  AGUARDANDO_USUARIO
-  RESOLVIDO
-  ENCERRADO
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
-  CANCELADO
+model department {
+  id     String   @id
+  name   String   @unique(map: "Department_name_key")
+  ticket ticket[]
+  user   user[]
 }
 
-model Role {
-  id    String   @id @default(uuid())
-  name  RoleName @unique
-  users User[]
+model knowledgearticle {
+  id                                       String                  @id
+  title                                    String
+  problem                                  String                  @db.Text
+  solution                                 String                  @db.Text
+  keywords                                 String?
+  status                                   knowledgearticle_status @default(PENDENTE)
+  categoryId                               String
+  createdById                              String
+  approvedById                             String?
+  approvedAt                               DateTime?
+  sourceTicketId                           String?
+  createdAt                                DateTime                @default(now())
+  updatedAt                                DateTime
+  user_knowledgearticle_approvedByIdTouser user?                   @relation("knowledgearticle_approvedByIdTouser", fields: [approvedById], references: [id], map: "KnowledgeArticle_approvedById_fkey")
+  category                                 category                @relation(fields: [categoryId], references: [id], map: "KnowledgeArticle_categoryId_fkey")
+  user_knowledgearticle_createdByIdTouser  user                    @relation("knowledgearticle_createdByIdTouser", fields: [createdById], references: [id], map: "KnowledgeArticle_createdById_fkey")
+  ticket                                   ticket?                 @relation(fields: [sourceTicketId], references: [id], map: "KnowledgeArticle_sourceTicketId_fkey")
+  ticketknowledgeuse                       ticketknowledgeuse[]
+
+  @@index([approvedById], map: "KnowledgeArticle_approvedById_fkey")
+  @@index([categoryId], map: "KnowledgeArticle_categoryId_fkey")
+  @@index([createdById], map: "KnowledgeArticle_createdById_fkey")
+  @@index([sourceTicketId], map: "KnowledgeArticle_sourceTicketId_fkey")
 }
 
-model Department {
-  id      String   @id @default(uuid())
-  name    String   @unique
-  users   User[]
-  tickets Ticket[]
+model role {
+  id   String    @id
+  name role_name @unique(map: "Role_name_key")
+  user user[]
 }
 
-model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  roleId       String
-  departmentId String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model ticket {
+  id                             String               @id
+  code                           String               @unique(map: "Ticket_code_key")
+  description                    String               @db.Text
+  location                       String?
+  equipment                      String?
+  contact                        String?
+  priority                       ticket_priority      @default(MEDIA)
+  status                         ticket_status        @default(ABERTO)
+  categoryId                     String
+  departmentId                   String?
+  requesterId                    String
+  requesterName                  String
+  technicianId                   String?
+  createdAt                      DateTime             @default(now())
+  dueAt                          DateTime
+  updatedAt                      DateTime
+  resolvedAt                     DateTime?
+  closedAt                       DateTime?
+  attachment                     attachment[]
+  knowledgearticle               knowledgearticle[]
+  category                       category             @relation(fields: [categoryId], references: [id], map: "Ticket_categoryId_fkey")
+  department                     department?          @relation(fields: [departmentId], references: [id], map: "Ticket_departmentId_fkey")
+  user_ticket_requesterIdTouser  user                 @relation("ticket_requesterIdTouser", fields: [requesterId], references: [id], map: "Ticket_requesterId_fkey")
+  user_ticket_technicianIdTouser user?                @relation("ticket_technicianIdTouser", fields: [technicianId], references: [id], map: "Ticket_technicianId_fkey")
+  ticketcomment                  ticketcomment[]
+  ticketfeedback                 ticketfeedback?
+  tickethistory                  tickethistory[]
+  ticketknowledgeuse             ticketknowledgeuse[]
 
-  role       Role        @relation(fields: [roleId], references: [id])
-  department Department? @relation(fields: [departmentId], references: [id])
-
-  requestedTickets Ticket[]        @relation("RequestedTickets")
-  assignedTickets  Ticket[]        @relation("AssignedTickets")
-  comments         TicketComment[]
-  historyEvents    TicketHistory[]
-  feedbacks        TicketFeedback[]
+  @@index([categoryId], map: "Ticket_categoryId_fkey")
+  @@index([departmentId], map: "Ticket_departmentId_fkey")
+  @@index([requesterId], map: "Ticket_requesterId_fkey")
+  @@index([technicianId], map: "Ticket_technicianId_fkey")
 }
 
-model Category {
-  id       String   @id @default(uuid())
-  name     String   @unique
-  slaHours Int      @default(24) // prazo padrão de resolução, em horas, para chamados dessa categoria
-  tickets  Ticket[]
+model ticketcomment {
+  id               String   @id
+  ticketId         String
+  userId           String
+  content          String   @db.Text
+  isFirstTreatment Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  ticket           ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade, map: "TicketComment_ticketId_fkey")
+  user             user     @relation(fields: [userId], references: [id], map: "TicketComment_userId_fkey")
+
+  @@index([ticketId], map: "TicketComment_ticketId_fkey")
+  @@index([userId], map: "TicketComment_userId_fkey")
 }
 
-model Ticket {
-  id          String   @id @default(uuid())
-  code        String   @unique // ex: CH-0001
-  title       String
-  description String   @db.Text
-  location    String?
-  equipment   String?
-  contact     String?
-  priority    Priority @default(MEDIA)
-  status      Status   @default(ABERTO)
+model ticketfeedback {
+  id        String   @id
+  ticketId  String   @unique(map: "TicketFeedback_ticketId_key")
+  userId    String
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  ticket    ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade, map: "TicketFeedback_ticketId_fkey")
+  user      user     @relation(fields: [userId], references: [id], map: "TicketFeedback_userId_fkey")
 
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  departmentId String?
-  department   Department? @relation(fields: [departmentId], references: [id])
-
-  requesterId String
-  requester   User   @relation("RequestedTickets", fields: [requesterId], references: [id])
-
-  technicianId String?
-  technician   User?   @relation("AssignedTickets", fields: [technicianId], references: [id])
-
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  resolvedAt DateTime?
-  closedAt   DateTime?
-
-  history     TicketHistory[]
-  comments    TicketComment[]
-  attachments Attachment[]
-  feedback    TicketFeedback?
+  @@index([userId], map: "TicketFeedback_userId_fkey")
 }
 
-model TicketHistory {
-  id          String   @id @default(uuid())
+model tickethistory {
+  id          String   @id
   ticketId    String
-  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  action      String // ex: STATUS_CHANGE, PRIORITY_CHANGE, ASSIGNED, CREATED, COMMENT, FEEDBACK
+  action      String
   fromValue   String?
   toValue     String?
   description String   @db.Text
   createdAt   DateTime @default(now())
+  ticket      ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade, map: "TicketHistory_ticketId_fkey")
+  user        user?    @relation(fields: [userId], references: [id], map: "TicketHistory_userId_fkey")
+
+  @@index([ticketId], map: "TicketHistory_ticketId_fkey")
+  @@index([userId], map: "TicketHistory_userId_fkey")
 }
 
-model TicketComment {
-  id               String   @id @default(uuid())
+model ticketknowledgeuse {
+  id               String           @id
   ticketId         String
-  ticket           Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  articleId        String
   userId           String
-  user             User     @relation(fields: [userId], references: [id])
-  content          String   @db.Text
-  isFirstTreatment Boolean  @default(false)
-  createdAt        DateTime @default(now())
+  createdAt        DateTime         @default(now())
+  knowledgearticle knowledgearticle @relation(fields: [articleId], references: [id], onDelete: Cascade, map: "TicketKnowledgeUse_articleId_fkey")
+  ticket           ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade, map: "TicketKnowledgeUse_ticketId_fkey")
+  user             user             @relation(fields: [userId], references: [id], map: "TicketKnowledgeUse_userId_fkey")
+
+  @@unique([ticketId, articleId], map: "TicketKnowledgeUse_ticketId_articleId_key")
+  @@index([articleId], map: "TicketKnowledgeUse_articleId_fkey")
+  @@index([userId], map: "TicketKnowledgeUse_userId_fkey")
 }
 
-model Attachment {
-  id        String   @id @default(uuid())
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  filename  String
-  path      String
-  createdAt DateTime @default(now())
+model user {
+  id                                                   String               @id
+  name                                                 String
+  email                                                String               @unique(map: "User_email_key")
+  passwordHash                                         String
+  roleId                                               String
+  departmentId                                         String?
+  createdAt                                            DateTime             @default(now())
+  updatedAt                                            DateTime
+  knowledgearticle_knowledgearticle_approvedByIdTouser knowledgearticle[]   @relation("knowledgearticle_approvedByIdTouser")
+  knowledgearticle_knowledgearticle_createdByIdTouser  knowledgearticle[]   @relation("knowledgearticle_createdByIdTouser")
+  ticket_ticket_requesterIdTouser                      ticket[]             @relation("ticket_requesterIdTouser")
+  ticket_ticket_technicianIdTouser                     ticket[]             @relation("ticket_technicianIdTouser")
+  ticketcomment                                        ticketcomment[]
+  ticketfeedback                                       ticketfeedback[]
+  tickethistory                                        tickethistory[]
+  ticketknowledgeuse                                   ticketknowledgeuse[]
+  department                                           department?          @relation(fields: [departmentId], references: [id], map: "User_departmentId_fkey")
+  role                                                 role                 @relation(fields: [roleId], references: [id], map: "User_roleId_fkey")
+
+  @@index([departmentId], map: "User_departmentId_fkey")
+  @@index([roleId], map: "User_roleId_fkey")
 }
 
-// Avaliação/feedback do usuário solicitante após o fechamento do chamado
-model TicketFeedback {
-  id        String   @id @default(uuid())
-  ticketId  String   @unique
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  rating    Int // 1 a 5
-  comment   String?  @db.Text
-  createdAt DateTime @default(now())
+enum role_name {
+  ADMIN
+  ANALISTA
+  TECHNICIAN
+  USER
+}
+
+enum category_defaultPriority {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum knowledgearticle_status {
+  PENDENTE
+  APROVADO
+}
+
+enum ticket_priority {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum ticket_status {
+  ABERTO
+  EM_ATENDIMENTO
+  AGUARDANDO_USUARIO
+  RESOLVIDO
+  CANCELADO
 }

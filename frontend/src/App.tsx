@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
+import { RoleGuard } from "./routes/RoleGuard";
 import { AppLayout } from "./layouts/AppLayout";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -10,10 +11,10 @@ import { TicketDetailPage } from "./pages/TicketDetailPage";
 import { TicketQueryPage } from "./pages/TicketQueryPage";
 import { TechnicianPanelPage } from "./pages/TechnicianPanelPage";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
-<<<<<<< HEAD
 import { UsersPage } from "./pages/UsersPage";
-=======
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
+import { CategoriesPage } from "./pages/CategoriesPage";
+import { ReportsPage } from "./pages/ReportsPage";
+import { KnowledgePage } from "./pages/KnowledgePage";
 
 // Usuários clientes (USER) não têm Dashboard: a rota "/" mostra direto os
 // chamados que eles abriram. Admin e técnico continuam vendo o Dashboard.
@@ -43,14 +44,39 @@ export default function App() {
             <Route path="/chamados/:id" element={<TicketDetailPage />} />
             <Route path="/consultar-chamados" element={<TicketQueryPage />} />
             <Route path="/painel-tecnico" element={<TechnicianPanelPage />} />
-<<<<<<< HEAD
-            <Route path="/usuarios" element={<UsersPage />} />
-=======
-            <Route path="/usuarios" element={<ComingSoonPage title="Gestão de usuários" />} />
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
+            <Route
+              path="/usuarios"
+              element={
+                <RoleGuard roles={["ADMIN", "ANALISTA"]}>
+                  <UsersPage />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/base-conhecimento"
+              element={
+                <RoleGuard roles={["ADMIN", "ANALISTA", "TECHNICIAN"]}>
+                  <KnowledgePage />
+                </RoleGuard>
+              }
+            />
             <Route path="/tecnicos" element={<ComingSoonPage title="Técnicos" />} />
-            <Route path="/categorias" element={<ComingSoonPage title="Categorias" />} />
-            <Route path="/relatorios" element={<ComingSoonPage title="Relatórios" />} />
+            <Route
+              path="/categorias"
+              element={
+                <RoleGuard roles={["ADMIN"]}>
+                  <CategoriesPage />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/relatorios"
+              element={
+                <RoleGuard roles={["ADMIN"]}>
+                  <ReportsPage />
+                </RoleGuard>
+              }
+            />
             <Route path="/configuracoes" element={<ComingSoonPage title="Configurações" />} />
           </Route>
         </Routes>

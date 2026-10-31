@@ -1,11 +1,10 @@
-import { AlertTriangle, ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { Priority } from "../types";
 
 const priorityConfig: Record<Priority, { label: string; className: string; icon: typeof Minus }> = {
   BAIXA: { label: "Baixa", className: "bg-line text-muted", icon: ArrowDown },
   MEDIA: { label: "Média", className: "bg-warning-light text-warning", icon: Minus },
-  ALTA: { label: "Alta", className: "bg-warning-light text-warning", icon: ArrowUp },
-  CRITICA: { label: "Crítica", className: "bg-critical-light text-critical", icon: AlertTriangle },
+  ALTA: { label: "Alta", className: "bg-critical-light text-critical", icon: ArrowUp },
 };
 
 export function PriorityBadge({ priority }: { priority: Priority }) {

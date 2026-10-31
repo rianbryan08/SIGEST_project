@@ -6,21 +6,27 @@ import { useAuth } from "../contexts/AuthContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { PriorityBadge } from "../components/PriorityBadge";
 import { SlaBadge } from "../components/SlaBadge";
+import { AttachmentImage } from "../components/AttachmentImage";
+import { KnowledgePanel } from "../components/KnowledgePanel";
 import { TicketStatus, Priority, TicketFeedback } from "../types";
 
 interface TicketDetail {
   id: string;
   code: string;
-  title: string;
   description: string;
   status: TicketStatus;
   priority: Priority;
   location: string | null;
   equipment: string | null;
+  contact: string | null;
   createdAt: string;
+  dueAt: string;
   updatedAt: string;
   resolvedAt: string | null;
-  category: { name: string; slaHours: number };
+  requesterName: string;
+  category: { id: string; name: string };
+  attachments: { id: string; filename: string }[];
+  knowledgeUses: { id: string; createdAt: string; article: { id: string; title: string }; user: { name: string } }[];
   requester: { id: string; name: string };
   technician: { id: string; name: string } | null;
   history: { id: string; description: string; createdAt: string; user: { name: string } | null }[];
@@ -36,17 +42,9 @@ interface TicketDetail {
 
 const statusOptions: TicketStatus[] = [
   "ABERTO",
-<<<<<<< HEAD
   "EM_ATENDIMENTO",
   "AGUARDANDO_USUARIO",
   "RESOLVIDO",
-=======
-  "EM_TRIAGEM",
-  "EM_ATENDIMENTO",
-  "AGUARDANDO_USUARIO",
-  "RESOLVIDO",
-  "ENCERRADO",
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
   "CANCELADO",
 ];
 
@@ -139,7 +137,6 @@ export function TicketDetailPage() {
     return <div className="flex h-64 items-center justify-center text-muted">Carregando chamado...</div>;
   }
 
-<<<<<<< HEAD
   const canManage =
     user?.role === "ADMIN" ||
     ((user?.role === "TECHNICIAN" || user?.role === "ANALISTA") && ticket.technician?.id === user.id);
@@ -147,13 +144,6 @@ export function TicketDetailPage() {
   // Chat: cliente que abriu o chamado + técnico que está atendendo + admin (para acompanhamento).
   const canChat = isRequester || canManage;
   const chatOpen = !["RESOLVIDO", "CANCELADO"].includes(ticket.status);
-=======
-  const canManage = user?.role === "ADMIN" || (user?.role === "TECHNICIAN" && ticket.technician?.id === user.id);
-  const isRequester = user?.id === ticket.requester.id;
-  // Chat: cliente que abriu o chamado + técnico que está atendendo + admin (para acompanhamento).
-  const canChat = isRequester || canManage;
-  const chatOpen = !["RESOLVIDO", "ENCERRADO", "CANCELADO"].includes(ticket.status);
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -164,16 +154,28 @@ export function TicketDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={ticket.status} />
               <PriorityBadge priority={ticket.priority} />
-              <SlaBadge createdAt={ticket.createdAt} slaHours={ticket.category.slaHours} status={ticket.status} />
+              <SlaBadge dueAt={ticket.dueAt} status={ticket.status} />
             </div>
           </div>
-          <h1 className="font-display text-xl font-bold text-ink">{ticket.title}</h1>
-          <p className="mt-2 text-sm text-muted">{ticket.description}</p>
+          <h1 className="font-display text-xl font-bold text-ink">{ticket.category.name}</h1>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{ticket.description}</p>
+
+          {ticket.attachments.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">Captura de tela anexada</p>
+              {ticket.attachments.map((a) => (
+                <AttachmentImage key={a.id} ticketId={ticket.id} attachmentId={a.id} filename={a.filename} />
+              ))}
+            </div>
+          )}
 
           <div className="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
             <div>
               <p className="text-muted">Solicitante</p>
-              <p className="font-medium text-ink">{ticket.requester.name}</p>
+              <p className="font-medium text-ink">{ticket.requesterName}</p>
+              {ticket.requesterName !== ticket.requester.name && (
+                <p className="text-xs text-muted">Aberto por {ticket.requester.name}</p>
+              )}
             </div>
             <div>
               <p className="text-muted">Técnico responsável</p>
@@ -187,8 +189,27 @@ export function TicketDetailPage() {
               <p className="text-muted">Localização</p>
               <p className="font-medium text-ink">{ticket.location ?? "—"}</p>
             </div>
+            <div>
+              <p className="text-muted">Equipamento</p>
+              <p className="font-medium text-ink">{ticket.equipment ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-muted">Contato</p>
+              <p className="font-medium text-ink">{ticket.contact ?? "—"}</p>
+            </div>
           </div>
         </div>
+
+        {canManage && (
+          <KnowledgePanel
+            ticketId={ticket.id}
+            category={ticket.category}
+            applied={ticket.knowledgeUses}
+            problemText={ticket.description}
+            messages={ticket.comments.map((c) => ({ id: c.id, author: c.user.name, content: c.content }))}
+            onChanged={load}
+          />
+        )}
 
         <div className="rounded-lg border border-line bg-surface p-6 shadow-soft">
           <h2 className="mb-4 font-display text-sm font-bold text-ink">Histórico do chamado</h2>
@@ -205,11 +226,7 @@ export function TicketDetailPage() {
           </ol>
         </div>
 
-<<<<<<< HEAD
         {ticket.status === "RESOLVIDO" && (
-=======
-        {(ticket.status === "RESOLVIDO" || ticket.status === "ENCERRADO") && (
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
           <div className="rounded-lg border border-line bg-surface p-6 shadow-soft">
             <h2 className="mb-3 font-display text-sm font-bold text-ink">Avaliação do atendimento</h2>
 
@@ -396,7 +413,6 @@ export function TicketDetailPage() {
               <option value="BAIXA">Baixa</option>
               <option value="MEDIA">Média</option>
               <option value="ALTA">Alta</option>
-              <option value="CRITICA">Crítica</option>
             </select>
           </div>
         )}

@@ -6,26 +6,18 @@ import { ticketRepository } from "../repositories/ticket.repository";
 
 const router = Router();
 router.use(authMiddleware);
-router.use(requireRole("ADMIN", "TECHNICIAN"));
+router.use(requireRole("ADMIN", "ANALISTA", "TECHNICIAN"));
 
 router.get("/stats", async (_req, res, next) => {
   try {
-<<<<<<< HEAD
     const [total, abertos, emAtendimento, aguardandoUsuario, resolvidos, altaPrioridade] =
-=======
-    const [total, abertos, emAtendimento, aguardandoUsuario, resolvidos, encerrados, altaPrioridade] =
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
       await Promise.all([
         ticketRepository.count(),
         ticketRepository.count({ status: "ABERTO" }),
         ticketRepository.count({ status: "EM_ATENDIMENTO" }),
         ticketRepository.count({ status: "AGUARDANDO_USUARIO" }),
         ticketRepository.count({ status: "RESOLVIDO" }),
-<<<<<<< HEAD
-=======
-        ticketRepository.count({ status: "ENCERRADO" }),
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
-        ticketRepository.count({ priority: { in: ["ALTA", "CRITICA"] } }),
+        ticketRepository.count({ priority: "ALTA" }),
       ]);
 
     res.json({
@@ -34,10 +26,6 @@ router.get("/stats", async (_req, res, next) => {
       emAtendimento,
       aguardandoUsuario,
       resolvidos,
-<<<<<<< HEAD
-=======
-      encerrados,
->>>>>>> 048f4529bb52f0a83fe5de287c36c2b7def0d7e2
       altaPrioridade,
     });
   } catch (err) {
